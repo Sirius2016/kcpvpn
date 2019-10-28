@@ -110,7 +110,7 @@ user1@server1:~$ KCPVPN_KEY="pre-shared-key" kcpvpn server \
     --local-ip 192.168.88.1 \
     --vni-mode tap \
     --assignable-ips 192.168.88.2-192.168.88.254 \
-    --netmask 255.255.255.0
+    --netmask 255.255.255.0 \
     --hook-dir /kcpvpn-hooks
 ```
 ### 客户端
