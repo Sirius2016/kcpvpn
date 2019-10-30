@@ -252,6 +252,11 @@ func (c *CommonConfig) PrintSummary() {
 	log.Printf("udp mtu: %d", c.GetUDPMTU())
 	log.Printf("send windows size: %d, receive windows size: %d", c.GetSendWindowSize(), c.GetReceiveWindowSize())
 	log.Printf("ack nodelay: %t", c.GetAckNodelay())
+
+	log.Printf("vni mtu: %d", c.GetVNIMTU())
+	if c.FullFrameMTU > 0 {
+		log.Printf("full frame mtu: %d", c.FullFrameMTU)
+	}
 }
 
 // ServerConfig
@@ -304,6 +309,7 @@ func createConfigFromCLI(extraFlags []cli.Flag, config *CommonConfig, cliCallbac
 	app := cli.NewApp()
 	app.Name = "KCPVPN"
 	app.Usage = "KCP based VPN"
+	app.Version = "0.1.0"
 
 	commonFlags := []cli.Flag{
 		cli.StringFlag{
@@ -422,10 +428,6 @@ func createConfigFromCLI(extraFlags []cli.Flag, config *CommonConfig, cliCallbac
 			Required: false,
 			Value:    1500,
 		},
-		cli.IntFlag{
-			Name:  "full-frame-mtu",
-			Value: 1522,
-		},
 	}
 
 	app.Flags = append(commonFlags, extraFlags...)
@@ -453,7 +455,6 @@ func createConfigFromCLI(extraFlags []cli.Flag, config *CommonConfig, cliCallbac
 		config.SetKeepaliveInterval(c.Int("keepalive"))
 
 		config.SetVNIMTU(go_tuntap.VirtualNetworkInterfaceMTU(c.Uint("vni-mtu")))
-		config.FullFrameMTU = go_tuntap.VirtualNetworkInterfaceMTU(c.Uint("full-frame-mtu"))
 
 		switch config.GetKCPMode() {
 		case "normal":
@@ -529,6 +530,11 @@ func createServerConfig(onCreated func(serverConfig *ServerConfig)) error {
 			Name:  "hook-dir",
 			Value: "",
 		},
+		cli.IntFlag{
+			Name:  "full-frame-mtu",
+			Usage: "decide automatically if is 0",
+			Value: 0,
+		},
 	}, &vpnServerConfig.CommonConfig, func(c *cli.Context) error {
 		vpnServerConfig.VNINamePrefix = c.String("vni-name-prefix")
 
@@ -571,6 +577,13 @@ func createServerConfig(onCreated func(serverConfig *ServerConfig)) error {
 		}
 
 		vpnServerConfig.HookDirectory = c.String("hook-dir")
+
+		fullFrameMTU := c.Uint("full-frame-mtu")
+		if fullFrameMTU == 0 {
+			vpnServerConfig.FullFrameMTU = vpnServerConfig.GetVNIMTU() + 22
+		} else {
+			vpnServerConfig.FullFrameMTU = go_tuntap.VirtualNetworkInterfaceMTU(fullFrameMTU)
+		}
 
 		onCreated(&vpnServerConfig)
 		return nil

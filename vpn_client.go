@@ -23,6 +23,7 @@ type VPNClient struct {
 	HasState
 	session              net.Conn
 	controlMessageStream io.ReadWriteCloser
+	vniStream            io.ReadWriteCloser
 	vniName              string
 	serverConfig         *ServerConfig
 	vni                  go_tuntap.VirtualNetworkInterface
@@ -249,8 +250,9 @@ func (c *VPNClient) sendServerConfiguration(arguments interface{}) (interface{},
 func (c *VPNClient) putVPNConfiguration(buffer []byte) error {
 	buffer[0] = uint8(c.serverConfig.GetVNIMode())
 	binary.LittleEndian.PutUint16(buffer[1:], uint16(c.serverConfig.GetVNIMTU()))
-	binary.LittleEndian.PutUint32(buffer[3:], c.serverConfig.GetLocalIP())
-	binary.LittleEndian.PutUint32(buffer[7:], c.serverConfig.GetIP4Netmask())
+	binary.LittleEndian.PutUint16(buffer[3:], uint16(c.serverConfig.FullFrameMTU))
+	binary.LittleEndian.PutUint32(buffer[5:], c.serverConfig.GetLocalIP())
+	binary.LittleEndian.PutUint32(buffer[9:], c.serverConfig.GetIP4Netmask())
 	return nil
 }
 
@@ -313,7 +315,7 @@ func (c *VPNClient) createVNI(arguments interface{}) (interface{}, error) {
 }
 
 func (c *VPNClient) handle(arguments interface{}) (interface{}, error) {
-	defer c.log(fmt.Sprintf("handler for %s ended", c.session.RemoteAddr()))
+	defer c.log(fmt.Sprintf("handler for %s ended", c.remoteAddr))
 	c.setNextState(nil)
 
 	c.log("invoking connected hooks")
@@ -325,11 +327,11 @@ func (c *VPNClient) handle(arguments interface{}) (interface{}, error) {
 
 	c.log("accepting vni stream")
 	vniStream, err := c.smuxSession.Accept()
-	c.log("vni stream accepted")
 	if err != nil {
 		return nil, err
 	}
-	defer vniStream.Close()
+	c.log("vni stream accepted")
+	c.vniStream = vniStream
 
 	c.log("net<--->vni exchange handler starting")
 	exchangeEvent := startReadWriterExchange(vniStream, c.vni, uint(c.serverConfig.FullFrameMTU), c.log)
@@ -389,15 +391,21 @@ func (c *VPNClient) SendStopSignal() error {
 }
 
 func (c *VPNClient) Close() error {
+	// strange block on close vni stream, so trying to close smux session first...
+	if c.smuxSession != nil {
+		_ = c.smuxSession.Close()
+		c.smuxSession = nil
+		c.log("smux session closed")
+	}
 	if c.controlMessageStream != nil {
 		_ = c.controlMessageStream.Close()
 		c.controlMessageStream = nil
 		c.log("control message stream closed")
 	}
-	if c.smuxSession != nil {
-		_ = c.smuxSession.Close()
-		c.smuxSession = nil
-		c.log("smux session closed")
+	if c.vniStream != nil {
+		c.log("closing vni stream")
+		_ = c.vniStream.Close()
+		c.log("vni stream closed")
 	}
 	if c.session != nil {
 		_ = c.session.Close()

@@ -23,7 +23,7 @@ type VNIConfig struct {
 	IsPersistent bool
 }
 
-var ServerConfigurationSize = unsafe.Sizeof(go_tuntap.VirtualNetworkInterfaceMode(0)) + (unsafe.Sizeof(uint32(0)) * 2) + unsafe.Sizeof(uint16(0))
+var ServerConfigurationSize = unsafe.Sizeof(go_tuntap.VirtualNetworkInterfaceMode(0)) + (unsafe.Sizeof(uint32(0)) * 2) + (unsafe.Sizeof(uint16(0)) * 2)
 
 var logChannel = make(chan string, 16)
 
@@ -142,7 +142,7 @@ func readThenWrite(reader io.Reader, writer io.Writer, bufferSize uint) error {
 		_, err = writer.Write(buffer[:nRead])
 		// log.Printf("%d byte(s) write", nWrite)
 		if err != nil {
-			return nil
+			return err
 		}
 	}
 }

@@ -158,10 +158,12 @@ func (v *VPNServer) retrieveServerConfiguration(arguments interface{}) (interfac
 	v.log(fmt.Sprintf("vni mode: %d", v.clientConfig.GetVNIMode()))
 	v.serverExpectMTU = go_tuntap.VirtualNetworkInterfaceMTU(binary.LittleEndian.Uint16(buffer[1:]))
 	v.log(fmt.Sprintf("server expect mtu: %d", v.serverExpectMTU))
-	v.clientConfig.SetPeerIP(binary.LittleEndian.Uint32(buffer[3:]))
+	v.clientConfig.FullFrameMTU = go_tuntap.VirtualNetworkInterfaceMTU(binary.LittleEndian.Uint16(buffer[3:]))
+	v.log(fmt.Sprintf("full frame mtu: %d", v.clientConfig.FullFrameMTU))
+	v.clientConfig.SetPeerIP(binary.LittleEndian.Uint32(buffer[5:]))
 	v.log(fmt.Sprintf("peer ip: %s", long2ip(v.clientConfig.GetPeerIP())))
 
-	netmask := binary.LittleEndian.Uint32(buffer[7:])
+	netmask := binary.LittleEndian.Uint32(buffer[9:])
 	if (v.clientConfig.ClientIPMode != ClientIPModeOther || v.clientConfig.GetIP4Netmask() == 0) && netmask > 0 {
 		v.clientConfig.SetIP4Netmask(netmask)
 		v.log(fmt.Sprintf("netmask: %s", long2ip(v.clientConfig.GetIP4Netmask())))

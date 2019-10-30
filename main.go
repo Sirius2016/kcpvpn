@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"syscall"
 	"time"
 )
 
@@ -26,15 +27,15 @@ func main() {
 		errorCheck(err)
 	} else if command == "client" || command == "c" {
 		err := createClientConfig(func(clientConfig *ClientConfig) {
-			for {
-				err := startClient(clientConfig)
-				if err != nil {
-					log.Println(err)
+			err := startClient(clientConfig)
+			if err != nil {
+				log.Println(err)
+			}
+			if clientConfig.AutoReconnect == true {
+				time.Sleep(1 * time.Second)
+				if err := syscall.Exec(os.Args[0], os.Args, os.Environ()); err != nil {
+					log.Fatal(err)
 				}
-				if clientConfig.AutoReconnect == false {
-					break
-				}
-				time.Sleep(3 * time.Second)
 			}
 		})
 		errorCheck(err)

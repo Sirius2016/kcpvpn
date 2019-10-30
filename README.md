@@ -51,7 +51,7 @@ user1@server1:~$ kcpvpn server --help
    --local-ip value                 本地IP，服务器仅在TUN模式下适用
    --netmask value                  子网掩码，仅TAP模式下适用
    --vni-mtu value                  tun/tap虚拟网卡MTU (default: 1500)
-   --full-frame-mtu value           (default: 1522)
+   --full-frame-mtu value           decide automatically if is 0 (default: 0)
    --vni-name-prefix value          服务器模式下虚拟网卡名称前缀 (default: "kvs")
    --vni-mode value                 虚拟网卡模式，tun或tap
    --assignable-ips value           用于分配给客户端的IP范围，格式如：192.168.0.0/24 or 192.168.0.0-192.168.0.255
@@ -77,7 +77,6 @@ user1@client1:~$ kcpvpn client --help
    --crypt value                    加密算法：aes, aes-128, aes-192, salsa20, blowfish, twofish, cast5, 3des, tea, xtea, xor, sm4, none (default: "aes")
    --local-ip value                 指定使用的本地IP，客户端在tun和tap模式下均适用
    --vni-mtu value                  tun/tap虚拟网卡MTU (default: 1500)
-   --full-frame-mtu value           (default: 1522)
    --client-id value                客户端ID，用以服务器根据客户端ID调用Hook，最大长度不可超过16字节
    --vni-name value                 tun/tap网卡名称
    --persistent-vni                 持久型tun/tap网卡，即程序退出后，仍然保留
@@ -226,8 +225,7 @@ user1@client1:~$ cat /proc/net/arp | grep 192.168.88.1
 
     程序默认使用的虚拟网卡MTU是1500，如果传输大量数据，程序需要频繁调用内核API，因此可尝试添加以下参数启用jumbo frame，把MTU设至9000：
     ```
-  --vni-mtu 9000 --full-frame-mtu 9022
+  --vni-mtu 9000
   ```
-    请注意--full-frame-mtu同时也需增大，且在服务端与客户端均需要添加此参数；正常情况下比--vni-mtu大22即可。
     
-    9000 / 1500 = 6，这意味着每个数据包可最多减少六次相关的系统调用
+    9000 / 1500 = 6，这意味着每个数据包可最多减少五次相关的系统调用
