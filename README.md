@@ -229,3 +229,12 @@ user1@client1:~$ cat /proc/net/arp | grep 192.168.88.1
   ```
     
     9000 / 1500 = 6，这意味着每个数据包可最多减少五次相关的系统调用
+    
+* 虚拟网卡MTU小于1500导致部分TCP服务无法正常使用
+    
+    请使用iptables修改SYN包的MSS值，取值一般为虚拟网卡的MTU - 40，例如--vni-mtu 1450，MSS取值1410：
+    ```
+  # -i与-o后面的“kvs”是虚拟网卡名称前缀，即--vni-name-prefix参数所指定的值
+  iptables -t mangle -A FORWARD -i kvs+ -p tcp --syn -j TCPMSS --set-mss MSS值
+  iptables -t mangle -A FORWARD -o kvs+ -p tcp --syn -j TCPMSS --set-mss MSS值
+  ```

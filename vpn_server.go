@@ -241,11 +241,14 @@ func (v *VPNServer) handle(parameters interface{}) (interface{}, error) {
 	v.log("control message handler started")
 
 	sigs := make(chan os.Signal)
+	defer close(sigs)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 
 	v.log("waiting for handler's events...")
 	select {
 	case <-sigs:
+		v.clientConfig.AutoReconnect = false
+		break
 	case <-exchangeEvent:
 	case <-controlMessageEvent:
 	}
