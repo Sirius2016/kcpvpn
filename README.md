@@ -46,7 +46,7 @@ user1@server1:~$ kcpvpn server --help
    --sockbuf value                  per-socket buffer in bytes (default: 4194304)
    --smuxbuf value                  the overall de-mux buffer in bytes (default: 4194304)
    --keepalive value                seconds between heartbeats (default: 10)
-   --secret value                   预共享秘钥 [$KCPVPN_KEY]
+   --secret value                   密钥 [$KCPVPN_KEY]
    --crypt value                    加密算法：aes, aes-128, aes-192, salsa20, blowfish, twofish, cast5, 3des, tea, xtea, xor, sm4, none (default: "aes")
    --local-ip value                 本地IP，服务器仅在TUN模式下适用
    --netmask value                  子网掩码，仅TAP模式下适用
@@ -62,7 +62,7 @@ user1@server1:~$ kcpvpn server --help
 user1@client1:~$ kcpvpn client --help
 ...
    --ip value                       服务器IP
-   --port value                     服务器短裤
+   --port value                     服务器端口
    --udp-mtu value                  UDP数据包MTU (default: 1350)
    --kcp-mode value                 KCP模式: fast3, fast2, fast, normal, manual (default: "fast"，参见KCPTUN)
    --sndwnd value                   set send window size(num of packets) (default: 1024)
@@ -73,7 +73,7 @@ user1@client1:~$ kcpvpn client --help
    --sockbuf value                  per-socket buffer in bytes (default: 4194304)
    --smuxbuf value                  the overall de-mux buffer in bytes (default: 4194304)
    --keepalive value                seconds between heartbeats (default: 10)
-   --secret value                   预共享秘钥 [$KCPVPN_KEY]
+   --secret value                   密钥 [$KCPVPN_KEY]
    --crypt value                    加密算法：aes, aes-128, aes-192, salsa20, blowfish, twofish, cast5, 3des, tea, xtea, xor, sm4, none (default: "aes")
    --local-ip value                 指定使用的本地IP，客户端在tun和tap模式下均适用
    --vni-mtu value                  tun/tap虚拟网卡MTU (default: 1500)
