@@ -8,21 +8,12 @@ License: [Apache License, Version 2.0](https://github.com/yzsme/kcpvpn/blob/mast
 ## 方式一：下载Release
 见本项目的Release页
 ## 方式二：自行编译
+参考：[https://github.com/yzsme/kcpvpn/blob/master/build.bash](https://github.com/yzsme/kcpvpn/blob/master/build.bash)
 ```
-BUILD_DIR="kcpvpn-build"
-mkdir -p ${BUILD_DIR}
-pushd ${BUILD_DIR}
-
-git clone https://github.com/yzsme/libtuntap4go.git
-pushd libtuntap4go
-cmake -DCMAKE_BUILD_TYPE=Release && make
-popd
-
-CGO_CFLAGS="-g -O2 -I$(pwd)/libtuntap4go" CGO_LDFLAGS="-g -O2 -L$(pwd)/libtuntap4go" go get -u github.com/yzsme/kcpvpn/...
-popd
-
-ls -l ${GOBIN}/kcpvpn
-cp ${GOBIN}/kcpvpn /usr/bin
+git clone https://github.com/yzsme/kcpvpn
+pushd kcpvpn
+bash ./build.bash
+ls -l kcpvpn-build
 ```
 # 使用
 ## 允许以非root用户运行
