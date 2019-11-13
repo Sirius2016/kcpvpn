@@ -56,6 +56,8 @@ user1@server1:~$ kcpvpn server --help
    --vni-mode value                 虚拟网卡模式，tun或tap
    --assignable-ips value           用于分配给客户端的IP范围，格式如：192.168.0.0/24 or 192.168.0.0-192.168.0.255
    --hook-dir value                 hook存放文件夹
+   --bridge value                   自动把虚拟网卡加入到所指定名称的桥，仅TAP模式适用
+   --tcp                            raw socket模拟TCP模式
 ```
 ## 客户端模式
 ```
@@ -81,6 +83,9 @@ user1@client1:~$ kcpvpn client --help
    --vni-name value                 tun/tap网卡名称
    --persistent-vni                 持久型tun/tap网卡，即程序退出后，仍然保留
    --auto-reconnect                 与服务器链接中断后，自动重连
+   --bridge value                   自动把虚拟网卡加入到所指定名称的桥，仅TAP模式适用
+   --tcp                            raw socket模拟TCP模式
+   --on-connected-hook value        客户端与服务器连接成功后调用的hook
 ...
 ```
 ## 使用例子
