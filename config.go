@@ -5,6 +5,7 @@ import (
 	"github.com/urfave/cli"
 	go_tuntap "github.com/yzsme/go-tuntap"
 	"github.com/yzsme/goipam"
+	"github.com/yzsme/kcpvpn/libbrctl4go"
 	"log"
 	"os"
 	"strings"
@@ -18,23 +19,25 @@ type CommonConfig struct {
 	ReceiveWindowSize int
 	Datashard         int
 	Parityshard       int
-	DSCP              int
-	AckNodelay        bool
-	Nodelay           int
-	Interval          int
-	Resend            int
-	NC                int
-	SocketBufferSize  int
-	SMuxBufferSize    int
-	KeepaliveInerval  int
-	Secret            string
-	Crypt             string
-	VNIMTU            go_tuntap.VirtualNetworkInterfaceMTU
-	FullFrameMTU      go_tuntap.VirtualNetworkInterfaceMTU
-	UDPMTU            uint16
-	LocalIP           uint32
-	IP4Netmask        uint32
-	VNIMode           go_tuntap.VirtualNetworkInterfaceMode
+	DSCP                int
+	AckNodelay          bool
+	Nodelay             int
+	Interval            int
+	Resend              int
+	NC                  int
+	SocketBufferSize    int
+	SMuxBufferSize      int
+	KeepaliveInerval    int
+	Secret              string
+	Crypt               string
+	VNIMTU              go_tuntap.VirtualNetworkInterfaceMTU
+	FullFrameMTU        go_tuntap.VirtualNetworkInterfaceMTU
+	UDPMTU              uint16
+	LocalIP             uint32
+	IP4Netmask          uint32
+	VNIMode             go_tuntap.VirtualNetworkInterfaceMode
+	EnableTCPSimulation bool
+	BRCtl4Go            libbrctl4go.BRCtl4Go
 }
 
 type ServerConfig struct {
@@ -54,6 +57,7 @@ type ClientConfig struct {
 	ClientIdLength  uint8
 	ClientId        string
 	AutoReconnect   bool
+	OnConnectedHook string
 	ClientIPMode
 }
 
@@ -309,7 +313,7 @@ func createConfigFromCLI(extraFlags []cli.Flag, config *CommonConfig, cliCallbac
 	app := cli.NewApp()
 	app.Name = "KCPVPN"
 	app.Usage = "KCP based VPN"
-	app.Version = "0.1.1"
+	app.Version = "2019111301"
 
 	commonFlags := []cli.Flag{
 		cli.StringFlag{
@@ -428,6 +432,15 @@ func createConfigFromCLI(extraFlags []cli.Flag, config *CommonConfig, cliCallbac
 			Required: false,
 			Value:    1500,
 		},
+		cli.StringFlag{
+			Name:  "bridge",
+			Usage: "auto add interface to specific bridge, only available on tap mode",
+			Value: "",
+		},
+		cli.BoolFlag{
+			Name: "tcp",
+			Usage: "enable tcp simulation",
+		},
 	}
 
 	app.Flags = append(commonFlags, extraFlags...)
@@ -496,6 +509,17 @@ func createConfigFromCLI(extraFlags []cli.Flag, config *CommonConfig, cliCallbac
 			}
 			config.SetIP4Netmask(netmask)
 		}
+
+		bridgeName := c.String("bridge")
+		if bridgeName != "" {
+			brctl4go, err := libbrctl4go.OpenLinuxBridge(bridgeName, true)
+			if err != nil {
+				return cli.NewExitError(err, -1)
+			}
+			config.BRCtl4Go = brctl4go
+		}
+
+		config.EnableTCPSimulation = c.Bool("tcp")
 
 		err := cliCallback(c)
 		if err != nil {
@@ -609,11 +633,16 @@ func createClientConfig(onCreated func(clientConfig *ClientConfig)) error {
 			Required: false,
 		},
 		cli.BoolFlag{
-			Name: "auto-reconnect",
+			Name:  "auto-reconnect",
 			Usage: "auto reconnect to server on connection closed",
 		},
 		cli.BoolFlag{
 			Name: "no-ip-configuration",
+			Usage: "useful if a DHCP server exists, or bridge enabled",
+		},
+		cli.StringFlag{
+			Name:  "on-connected-hook",
+			Usage: "path to hook file",
 		},
 	}
 
@@ -645,6 +674,8 @@ func createClientConfig(onCreated func(clientConfig *ClientConfig)) error {
 		if c.Bool("no-ip-configuration") {
 			vpnClientConfig.ClientIPMode = ClientIPModeOther
 		}
+
+		vpnClientConfig.OnConnectedHook = c.String("on-connected-hook")
 
 		onCreated(&vpnClientConfig)
 		return nil

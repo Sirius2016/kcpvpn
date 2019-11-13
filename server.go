@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"github.com/xtaci/tcpraw"
 )
 
 func startServer(config *ServerConfig) error {
@@ -15,10 +16,22 @@ func startServer(config *ServerConfig) error {
 
 	block := createBlock(&config.CommonConfig)
 	listenAddressAndPort := fmt.Sprintf("%s:%d", config.GetIP(), config.GetPort())
-	listener, err := kcp.ListenWithOptions(listenAddressAndPort, block, config.GetDatashard(), config.GetParityshard())
+
+	var listener *kcp.Listener
+	var err error
+	if config.EnableTCPSimulation {
+		if conn, tcpErr := tcpraw.Listen("tcp", listenAddressAndPort); err == nil {
+			listener, err = kcp.ServeConn(block, config.GetDatashard(), config.GetParityshard(), conn)
+		} else {
+			return tcpErr
+		}
+	} else {
+		listener, err = kcp.ListenWithOptions(listenAddressAndPort, block, config.GetDatashard(), config.GetParityshard())
+	}
 	if err != nil {
 		return err
 	}
+
 	defer listener.Close()
 	log.Printf("listening on %s", listenAddressAndPort)
 

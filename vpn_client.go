@@ -243,8 +243,9 @@ func (c *VPNClient) sendClientSetIPValueRejected(arguments interface{}) (interfa
 func (c *VPNClient) sendServerConfiguration(arguments interface{}) (interface{}, error) {
 	buffer := make([]byte, ServerConfigurationSize+1)
 	buffer[0] = uint8(MessageServerConfiguration)
+	c.putVPNConfiguration(buffer[1:])
 	c.setNextState(c.receiveClientReady)
-	return writeControlMessage(c.controlMessageStream, buffer[1:])
+	return writeControlMessage(c.controlMessageStream, buffer)
 }
 
 func (c *VPNClient) putVPNConfiguration(buffer []byte) error {
@@ -309,6 +310,14 @@ func (c *VPNClient) createVNI(arguments interface{}) (interface{}, error) {
 	}
 
 	c.vni = vni
+
+	if vni.GetMode() == go_tuntap.TAP && c.serverConfig.BRCtl4Go != nil {
+		c.log(fmt.Sprintf("add interface %s to bridge", vni.GetName()))
+		err := c.serverConfig.BRCtl4Go.AddInterface(vni.GetName())
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	c.setNextState(c.handle)
 	return nil, nil

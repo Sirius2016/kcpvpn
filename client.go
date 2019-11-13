@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/xtaci/kcp-go"
+	"github.com/xtaci/tcpraw"
 	"log"
 )
 
@@ -13,10 +14,22 @@ func startClient(config *ClientConfig) error {
 
 	remoteAddr := fmt.Sprintf("%s:%d", config.GetIP(), config.GetPort())
 	log.Printf("connecting to %s", remoteAddr)
-	session, err := kcp.DialWithOptions(remoteAddr, block, config.GetDatashard(), config.GetParityshard())
+
+	var session *kcp.UDPSession
+	var err error
+	if config.EnableTCPSimulation {
+		conn, err := tcpraw.Dial("tcp", remoteAddr)
+		if err != nil {
+			return err
+		}
+		session, err = kcp.NewConn(remoteAddr, block, config.GetDatashard(), config.GetParityshard(), conn)
+	} else {
+		session, err = kcp.DialWithOptions(remoteAddr, block, config.GetDatashard(), config.GetParityshard())
+	}
 	if err != nil {
 		return err
 	}
+
 	defer session.Close()
 	session.SetStreamMode(true)
 	session.SetWriteDelay(false)

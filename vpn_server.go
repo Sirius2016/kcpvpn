@@ -10,6 +10,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"os/exec"
 	"os/signal"
 	"syscall"
 )
@@ -204,11 +205,18 @@ func (v *VPNServer) createVNI(arguments interface{}) (interface{}, error) {
 	}
 	v.log(fmt.Sprintf("vni mtu: %d", mtu))
 
+	bridgeVNI := false
+	localIP := v.clientConfig.GetLocalIP()
+	if v.clientConfig.GetVNIMode() == go_tuntap.TAP && v.clientConfig.BRCtl4Go != nil {
+		bridgeVNI = true
+		localIP = 0
+	}
+
 	vni, err := CreateVNI(&VNIConfig{
 		Mode:         v.clientConfig.GetVNIMode(),
 		Name:         v.clientConfig.GetVNIName(),
 		MTU:          mtu,
-		LocalIP:      v.clientConfig.GetLocalIP(),
+		LocalIP:      localIP,
 		Netmask:      v.clientConfig.GetIP4Netmask(),
 		PeerIP:       v.clientConfig.GetPeerIP(),
 		IsPersistent: v.isVNIPersistent,
@@ -217,6 +225,15 @@ func (v *VPNServer) createVNI(arguments interface{}) (interface{}, error) {
 		return nil, err
 	}
 	v.vni = vni
+
+	if bridgeVNI {
+		v.log(fmt.Sprintf("add interface %s to bridge", vni.GetName()))
+		err := v.clientConfig.BRCtl4Go.AddInterface(v.vni.GetName())
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	v.setNextState(v.handle)
 	return nil, nil
 }
@@ -231,6 +248,22 @@ func (v *VPNServer) handle(parameters interface{}) (interface{}, error) {
 		return nil, err
 	}
 	defer vniStream.Close()
+
+	if v.clientConfig.OnConnectedHook != "" {
+		v.log(fmt.Sprintf("hook: %s", v.clientConfig.OnConnectedHook))
+		cmd := exec.Command(v.clientConfig.OnConnectedHook)
+		cmd.Env = append(os.Environ(),
+			fmt.Sprintf("KV_CLIENT_ID=%s", v.clientConfig.ClientId),
+			fmt.Sprintf("KV_VNI_INTERFACE_NAME=%s", v.clientConfig.VNIName),
+			fmt.Sprintf("KV_CLIENT_IP=%s", long2ip(v.clientConfig.LocalIP)),
+			fmt.Sprintf("KV_CLIENT_IP_MODE=%d", v.clientConfig.ClientIPMode),
+			fmt.Sprintf("KV_REMOTE_ADDR=%s", long2ip(v.clientConfig.PeerIP)),
+		)
+		err := cmd.Run()
+		if err != nil {
+			v.log(err.Error())
+		}
+	}
 
 	v.log("net<--->vni exchange handler starting")
 	exchangeEvent := startReadWriterExchange(vniStream, v.vni, uint(v.clientConfig.FullFrameMTU), v.log)

@@ -62,6 +62,6 @@ func readControlMessageWithProvidedBuffer(reader io.Reader, buffer []byte) (int,
 }
 
 func readControlMessage(reader io.Reader, messageLength uint) (int, []byte, error) {
-	buffer := make([]byte, messageLength + 2)
+	buffer := make([]byte, messageLength+2)
 	return readControlMessageWithProvidedBuffer(reader, buffer)
 }
