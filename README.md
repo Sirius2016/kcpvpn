@@ -14,6 +14,7 @@ git clone https://github.com/yzsme/kcpvpn
 pushd kcpvpn
 bash ./build.bash
 ls -l kcpvpn-build
+popd
 ```
 # 使用
 ## 允许以非root用户运行
