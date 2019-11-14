@@ -172,9 +172,9 @@ RestartSec=3
 
 [Install]
 WantedBy=multi-user.target
-user1@server1:~$ systemctl daemon-reload
-user1@server1:~$ systemctl enable kcpvpn-client
-user1@server1:~$ systemctl start kcpvpn-client
+user1@client1:~$ systemctl daemon-reload
+user1@client1:~$ systemctl enable kcpvpn-client
+user1@client1:~$ systemctl start kcpvpn-client
 ```
 ## Hook
 在服务器模式下，可通过--hook-dir指定hook存放的目录；客户端模式可通过--on-connected-hook指定连接成功后的hook；Hook可以是Script，也可以是二进制可执行程序。
