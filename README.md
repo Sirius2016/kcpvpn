@@ -9,7 +9,7 @@ License: [Apache License, Version 2.0](https://github.com/yzsme/kcpvpn/blob/mast
 见本项目的Release页
 ## 方式二：自行编译
 参考：[https://github.com/yzsme/kcpvpn/blob/master/build.bash](https://github.com/yzsme/kcpvpn/blob/master/build.bash)
-```
+```shell script
 git clone https://github.com/yzsme/kcpvpn
 pushd kcpvpn
 bash ./build.bash
@@ -19,11 +19,11 @@ popd
 # 使用
 ## 允许以非root用户运行
 程序使用到tun/tap，默认情况下仅有root用户可调用相关API，设置以下capabilities后通过非root用户启动程序可监听<1024的端口且可调用tun/tap相关API：
-```
+```shell script
 setcap cap_net_admin,cap_net_bind_service,cap_net_raw+ep /usr/bin/kcpvpn
 ```
 ## 服务器模式
-```
+```shell script
 user1@server1:~$ kcpvpn server --help
 ...
    --ip value                       服务器模式下监听的IP
@@ -52,7 +52,7 @@ user1@server1:~$ kcpvpn server --help
    --tcp                            raw socket模拟TCP模式
 ```
 ## 客户端模式
-```
+```shell script
 user1@client1:~$ kcpvpn client --help
 ...
    --ip value                       服务器IP
@@ -84,7 +84,7 @@ user1@client1:~$ kcpvpn client --help
 ### 服务器
 #### tun模式
 如果--local-ip在--assignable-ips范围中，程序会自动排除
-```
+```shell script
 user1@server1:~$ KCPVPN_KEY="pre-shared-key" kcpvpn server \
     --ip 0.0.0.0 \
     --port 1235 \
@@ -96,8 +96,8 @@ user1@server1:~$ KCPVPN_KEY="pre-shared-key" kcpvpn server \
     --hook-dir /kcpvpn-hooks
 ```
 #### tap模式
-tap模式需要注意分配的IP范围需要手动排除network与broadcast地址，并且指定netmask
-```
+tap模式需要注意分配的IP范围需要手动排除network与broadcast地址，并且指定netmask；一般使用tap模式会有桥接的需求，可用使用--bridge指定一个现有的桥，程序将会自动把创建的tap网卡加入到桥
+```shell script
 user1@server1:~$ KCPVPN_KEY="pre-shared-key" kcpvpn server \
     --ip 0.0.0.0 \
     --port 1235 \
@@ -107,11 +107,12 @@ user1@server1:~$ KCPVPN_KEY="pre-shared-key" kcpvpn server \
     --vni-mode tap \
     --assignable-ips 192.168.88.2-192.168.88.254 \
     --netmask 255.255.255.0 \
-    --hook-dir /kcpvpn-hooks
+    --hook-dir /kcpvpn-hooks \
+    --bridge br0
 ```
 ### 客户端
 除了KCP协议本身的参数外，客户端无需指定VPN的参数，例如VPN模式（tun或tap），MTU等，这些参数都可以通过握手获取
-```
+```shell script
 user1@client1:~$ KCPVPN_KEY="pre-shared-key" kcpvpn client \
     --client-id client1 \
     --ip server1 \
@@ -120,7 +121,7 @@ user1@client1:~$ KCPVPN_KEY="pre-shared-key" kcpvpn client \
     --dscp 46
 ```
 如客户端指定使用固定IP，并且指定期望的MTU值（最终会取服务器与客户端中的最小值）：
-```
+```shell script
 user1@client1:~$ KCPVPN_KEY="pre-shared-key" kcpvpn client \
     --client-id client1 \
     --ip server1 \
@@ -131,8 +132,52 @@ user1@client1:~$ KCPVPN_KEY="pre-shared-key" kcpvpn client \
     --local-ip 192.168.88.255 \
     --vni-name kvc_c1
 ```
+## 随系统启动
+可参考以下systemd的配置文件
+### 服务器
+```shell script
+user1@server1:~$ cat /etc/systemd/system/kcpvpn-server.service
+[Unit]
+Description=KCPVPN Server
+After=network-online.target
+
+[Service]
+Environment="KCPVPN_KEY=pre-shared-key"
+Type=simple
+User=nobody
+ExecStart=/usr/bin/kcpvpn server --ip 0.0.0.0 --port 1235 --udp-mtu 1480 --kcp-mode fast3 --crypt xor --vni-mode tun --vni-mtu 1400 --local-ip 192.168.88.0 --assignable-ips 192.168.88.0/24
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
+user1@server1:~$ systemctl daemon-reload
+user1@server1:~$ systemctl enable kcpvpn-server
+user1@server1:~$ systemctl start kcpvpn-server
+```
+### 客户端
+```shell script
+user1@client1:~$ cat /etc/systemd/system/kcpvpn-client.service
+[Unit]
+Description=KCPVPN Server
+After=network-online.target
+
+[Service]
+Environment="KCPVPN_KEY=pre-shared-key"
+Type=simple
+User=nobody
+ExecStart=/usr/bin/kcpvpn server --ip server1 --port 1235 --udp-mtu 1480 --kcp-mode fast3 --crypt xor --persistent-vni --auto-reconnect
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
+user1@server1:~$ systemctl daemon-reload
+user1@server1:~$ systemctl enable kcpvpn-client
+user1@server1:~$ systemctl start kcpvpn-client
+```
 ## Hook
-在服务器模式下，可通过--hook-dir指定hook存放的目录；Hook可以是Script，也可以是二进制可执行程序。
+在服务器模式下，可通过--hook-dir指定hook存放的目录；客户端模式可通过--on-connected-hook指定连接成功后的hook；Hook可以是Script，也可以是二进制可执行程序。
 
 当客户端与服务器握手成功后，服务器会检查客户端是否有传递client id，如果有，检查目录下是否存在文件on_CLIENTID_connected文件，存在则运行（例如客户端传递的Client ID为client1，则hook文件名为on_client1_connected）。
 
@@ -148,7 +193,7 @@ user1@client1:~$ KCPVPN_KEY="pre-shared-key" kcpvpn client \
 tap模式附带以太网头，可直接通过桥接进行异地组网。
 
 ### 服务器配置示例如下
-```
+```shell script
 # 客户端连接后，服务器会出现kvs（可通过--vni-name-prefix更改）开头的TAP网卡
 user1@server1:~$ ip link show
 ...
@@ -182,7 +227,7 @@ user1@server1:~$ ip addr show
 ```
 
 ### 客户端
-```
+```shell script
 user1@client1:~$ ip addr show
 ...
 4: kvc0: <BROADCAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UNKNOWN group default qlen 1000
