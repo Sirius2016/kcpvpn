@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/xtaci/kcp-go"
 	"github.com/xtaci/tcpraw"
+	"github.com/yzsme/kcp-go"
 	"log"
 )
 
@@ -37,6 +37,7 @@ func startClient(config *ClientConfig) error {
 	session.SetMtu(int(config.GetUDPMTU()))
 	session.SetWindowSize(config.GetSendWindowSize(), config.GetReceiveWindowSize())
 	session.SetACKNoDelay(config.GetAckNodelay())
+	session.SetRapidFec(config.EnableRapidFec)
 
 	server, err := NewVPNServer(session, config, config.IsVNIPersistent())
 	if err != nil {

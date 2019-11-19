@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/xtaci/kcp-go"
+	"github.com/xtaci/tcpraw"
+	"github.com/yzsme/kcp-go"
 	"log"
 	"os"
 	"os/exec"
-	"github.com/xtaci/tcpraw"
 )
 
 func startServer(config *ServerConfig) error {
@@ -64,6 +64,7 @@ func startServer(config *ServerConfig) error {
 		session.SetMtu(int(config.GetUDPMTU()))
 		session.SetWindowSize(config.GetSendWindowSize(), config.GetReceiveWindowSize())
 		session.SetACKNoDelay(config.GetAckNodelay())
+		session.SetRapidFec(config.EnableRapidFec)
 
 		client, err := NewVPNClient(session, fmt.Sprintf("%s%d", config.GetVNINamePrefix(), config.IncreaseConnectionCounter()), config)
 

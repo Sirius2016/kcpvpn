@@ -12,13 +12,14 @@ import (
 )
 
 type CommonConfig struct {
-	IP                string
-	Port              uint16
-	KCPMode           string
-	SendWindowSize    int
-	ReceiveWindowSize int
-	Datashard         int
-	Parityshard       int
+	IP                  string
+	Port                uint16
+	KCPMode             string
+	SendWindowSize      int
+	ReceiveWindowSize   int
+	Datashard           int
+	Parityshard         int
+	EnableRapidFec      bool
 	DSCP                int
 	AckNodelay          bool
 	Nodelay             int
@@ -313,7 +314,7 @@ func createConfigFromCLI(extraFlags []cli.Flag, config *CommonConfig, cliCallbac
 	app := cli.NewApp()
 	app.Name = "KCPVPN"
 	app.Usage = "KCP based VPN"
-	app.Version = "2019111301"
+	app.Version = "2019111901"
 
 	commonFlags := []cli.Flag{
 		cli.StringFlag{
@@ -357,6 +358,10 @@ func createConfigFromCLI(extraFlags []cli.Flag, config *CommonConfig, cliCallbac
 			Name:  "parityshard,ps",
 			Value: 3,
 			Usage: "set reed-solomon erasure coding - parityshard",
+		},
+		cli.BoolFlag{
+			Name:  "rapid-fec",
+			Usage: "enable rapid fec mode",
 		},
 		cli.IntFlag{
 			Name:  "dscp",
@@ -438,7 +443,7 @@ func createConfigFromCLI(extraFlags []cli.Flag, config *CommonConfig, cliCallbac
 			Value: "",
 		},
 		cli.BoolFlag{
-			Name: "tcp",
+			Name:  "tcp",
 			Usage: "enable tcp simulation",
 		},
 	}
@@ -457,6 +462,7 @@ func createConfigFromCLI(extraFlags []cli.Flag, config *CommonConfig, cliCallbac
 		config.SetReceiveWindowSize(c.Int("rcvwnd"))
 		config.SetDatashard(c.Int("datashard"))
 		config.SetParityshard(c.Int("parityshard"))
+		config.EnableRapidFec = c.Bool("rapid-fec")
 		config.SetDSCP(c.Int("dscp"))
 		config.SetAckNodelay(c.Bool("acknodelay"))
 		config.SetNodelay(c.Int("nodelay"))
@@ -637,7 +643,7 @@ func createClientConfig(onCreated func(clientConfig *ClientConfig)) error {
 			Usage: "auto reconnect to server on connection closed",
 		},
 		cli.BoolFlag{
-			Name: "no-ip-configuration",
+			Name:  "no-ip-configuration",
 			Usage: "useful if a DHCP server exists, or bridge enabled",
 		},
 		cli.StringFlag{

@@ -34,6 +34,7 @@ user1@server1:~$ kcpvpn server --help
    --rcvwnd value                   set receive window size(num of packets) (default: 1024)
    --datashard value, --ds value    set reed-solomon erasure coding - datashard (default: 10)
    --parityshard value, --ps value  set reed-solomon erasure coding - parityshard (default: 3)
+   --rapid-fec                      增加少量流量消耗，提升低pps情况下fec的效果，从而降低丢包对延迟的影响
    --dscp value                     set DSCP(6bit) (default: 0)
    --sockbuf value                  per-socket buffer in bytes (default: 4194304)
    --smuxbuf value                  the overall de-mux buffer in bytes (default: 4194304)
@@ -63,6 +64,7 @@ user1@client1:~$ kcpvpn client --help
    --rcvwnd value                   set receive window size(num of packets) (default: 1024)
    --datashard value, --ds value    set reed-solomon erasure coding - datashard (default: 10)
    --parityshard value, --ps value  set reed-solomon erasure coding - parityshard (default: 3)
+   --rapid-fec                      增加少量流量消耗，提升低pps情况下fec的效果，从而降低丢包对延迟的影响
    --dscp value                     set DSCP(6bit) (default: 0)
    --sockbuf value                  per-socket buffer in bytes (default: 4194304)
    --smuxbuf value                  the overall de-mux buffer in bytes (default: 4194304)

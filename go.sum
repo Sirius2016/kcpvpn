@@ -35,6 +35,8 @@ github.com/yzsme/go-tuntap v0.0.0-20191031091559-c299c9699de2 h1:2UEazqRj2V117N3
 github.com/yzsme/go-tuntap v0.0.0-20191031091559-c299c9699de2/go.mod h1:AcmKiyRPrrQEO8Wod4maidLJc3E6I2Xd39W0ZTzNvZk=
 github.com/yzsme/goipam v0.0.0-20191027162812-61a2bfe88900 h1:BF+v4jbm/7BZOmjJPNa4eVM6l1qnm/fI246wGpeuG/c=
 github.com/yzsme/goipam v0.0.0-20191027162812-61a2bfe88900/go.mod h1:LVoH4nK1v8mvFkWTdP35uSvcO/91BDElJCFrqMoTW6o=
+github.com/yzsme/kcp-go v5.4.20-0.20191118180341-d02f98c590cd+incompatible h1:YE6Zl25A847LiYhFW6O6kBjMB2QDDssiQqzcW1yvcmQ=
+github.com/yzsme/kcp-go v5.4.20-0.20191118180341-d02f98c590cd+incompatible/go.mod h1:0Ss+2pAOFGoOwr3t4hdhrfTKDRTX8rziZzG9AX9NAbg=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
 golang.org/x/crypto v0.0.0-20191112222119-e1110fd1c708 h1:pXVtWnwHkrWD9ru3sDxY/qFK/bfc0egRovX91EjWjf4=
 golang.org/x/crypto v0.0.0-20191112222119-e1110fd1c708/go.mod h1:LzIPMQfyMNhhGPhUkYOs5KpL4U8rLKemX1yGLhDgUto=

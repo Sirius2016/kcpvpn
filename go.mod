@@ -17,5 +17,6 @@ require (
 	github.com/xtaci/tcpraw v1.2.25
 	github.com/yzsme/go-tuntap v0.0.0-20191031091559-c299c9699de2
 	github.com/yzsme/goipam v0.0.0-20191027162812-61a2bfe88900
+	github.com/yzsme/kcp-go v5.4.20-0.20191118180341-d02f98c590cd+incompatible
 	golang.org/x/crypto v0.0.0-20191112222119-e1110fd1c708
 )
