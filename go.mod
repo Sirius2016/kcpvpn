@@ -11,12 +11,11 @@ require (
 	github.com/templexxx/xor v0.0.0-20181023030647-4e92f724b73b // indirect
 	github.com/tjfoc/gmsm v1.0.1 // indirect
 	github.com/urfave/cli v1.22.1
-	github.com/xtaci/kcp-go v5.4.19+incompatible
 	github.com/xtaci/lossyconn v0.0.0-20190602105132-8df528c0c9ae // indirect
 	github.com/xtaci/smux v1.4.4
 	github.com/xtaci/tcpraw v1.2.25
 	github.com/yzsme/go-tuntap v0.0.0-20191031091559-c299c9699de2
 	github.com/yzsme/goipam v0.0.0-20191027162812-61a2bfe88900
-	github.com/yzsme/kcp-go v5.4.20-0.20191118180341-d02f98c590cd+incompatible
+	github.com/yzsme/kcp-go v5.4.20-0.20191119131915-1ee9a1b006e7+incompatible
 	golang.org/x/crypto v0.0.0-20191112222119-e1110fd1c708
 )

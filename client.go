@@ -5,6 +5,7 @@ import (
 	"github.com/xtaci/tcpraw"
 	"github.com/yzsme/kcp-go"
 	"log"
+	"time"
 )
 
 func startClient(config *ClientConfig) error {
@@ -38,6 +39,7 @@ func startClient(config *ClientConfig) error {
 	session.SetWindowSize(config.GetSendWindowSize(), config.GetReceiveWindowSize())
 	session.SetACKNoDelay(config.GetAckNodelay())
 	session.SetRapidFec(config.EnableRapidFec)
+	session.SetRapidFecMinInterval(time.Duration(config.GetInterval()) * time.Millisecond)
 
 	server, err := NewVPNServer(session, config, config.IsVNIPersistent())
 	if err != nil {

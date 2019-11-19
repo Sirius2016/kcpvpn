@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"time"
 )
 
 func startServer(config *ServerConfig) error {
@@ -65,6 +66,7 @@ func startServer(config *ServerConfig) error {
 		session.SetWindowSize(config.GetSendWindowSize(), config.GetReceiveWindowSize())
 		session.SetACKNoDelay(config.GetAckNodelay())
 		session.SetRapidFec(config.EnableRapidFec)
+		session.SetRapidFecMinInterval(time.Duration(config.GetInterval()) * time.Millisecond)
 
 		client, err := NewVPNClient(session, fmt.Sprintf("%s%d", config.GetVNINamePrefix(), config.IncreaseConnectionCounter()), config)
 

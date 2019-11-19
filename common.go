@@ -2,9 +2,9 @@ package main
 
 import (
 	"crypto/sha1"
-	"github.com/xtaci/kcp-go"
 	"github.com/xtaci/smux"
 	go_tuntap "github.com/yzsme/go-tuntap"
+	"github.com/yzsme/kcp-go"
 	"golang.org/x/crypto/pbkdf2"
 	"io"
 	"log"

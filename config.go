@@ -314,7 +314,7 @@ func createConfigFromCLI(extraFlags []cli.Flag, config *CommonConfig, cliCallbac
 	app := cli.NewApp()
 	app.Name = "KCPVPN"
 	app.Usage = "KCP based VPN"
-	app.Version = "2019111901"
+	app.Version = "2019112001"
 
 	commonFlags := []cli.Flag{
 		cli.StringFlag{
