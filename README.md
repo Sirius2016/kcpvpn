@@ -282,3 +282,7 @@ user1@client1:~$ cat /proc/net/arp | grep 192.168.88.1
   iptables -t mangle -A FORWARD -i kvs+ -p tcp --syn -j TCPMSS --set-mss MSS值
   iptables -t mangle -A FORWARD -o kvs+ -p tcp --syn -j TCPMSS --set-mss MSS值
   ```
+* Rapid FEC?
+
+    通过--rapid-fec参数可以启用此模式，会增加少许带宽消耗，但可大幅度降低丢包对延迟的影响。效果如下图，左上未启用，右上已启用，下方裸线路：
+![](https://cms.yuninter.net/wp-content/uploads/2019/11/mtr.png)
